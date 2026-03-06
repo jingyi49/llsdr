@@ -1,0 +1,3 @@
+$include:
+  - conf/prop.yml
+  - conf/1gpu.yml

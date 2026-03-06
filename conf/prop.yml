@@ -1,0 +1,109 @@
+# Model setup
+VODAC.sample_rate: 16000
+VODAC.encoder_dim: 64
+VODAC.encoder_rates: [2, 4, 5, 8]
+VODAC.decoder_dim: 1536
+VODAC.decoder_rates: [8, 5, 4, 2]
+
+# Quantization
+VODAC.n_codebooks: 12
+VODAC.n_ratio: 4
+VODAC.codebook_size: 1024
+VODAC.codebook_dim: [1,2,3,4,5,6,7,8,9,10,11,12]
+VODAC.quantizer_dropout: 0.5
+
+# Discriminator
+Discriminator.sample_rate: 16000
+Discriminator.rates: []
+Discriminator.periods: [2, 3, 5, 7, 11]
+Discriminator.fft_sizes: [2048, 1024, 512]
+Discriminator.bands:
+  - [0.0, 0.1]
+  - [0.1, 0.25]
+  - [0.25, 0.5]
+  - [0.5, 0.75]
+  - [0.75, 1.0]
+
+# Optimization
+AdamW.betas: [0.9, 0.98]
+AdamW.lr: 0.0001
+ExponentialLR.gamma: 0.999996
+
+
+amp: false
+val_batch_size: 100
+device: cuda
+num_iters: 250000
+#save_iters: [10000, 50000, 100000, 200000]
+save_iters: [100000, 200000]
+valid_freq: 1000
+sample_freq: 5000
+num_workers: 32
+val_idx: [0, 1, 2, 3, 4, 5, 6, 7]
+seed: 0
+lambdas:
+  mel/loss: 15.0
+  adv/feat_loss: 2.0
+  adv/gen_loss: 1.0
+  vq/commitment_loss: 0.25
+  vq/codebook_loss: 1.0
+
+VolumeNorm.db: [const, -16]
+
+# Transforms
+build_transform.preprocess:
+  - Identity
+build_transform.augment_prob: 0.0
+build_transform.augment:
+  - Identity
+build_transform.postprocess:
+  #- VolumeNorm
+  - RescaleAudio
+  - ShiftPhase
+
+# Loss setup
+MultiScaleSTFTLoss.window_lengths: [2048, 512]
+MelSpectrogramLoss.n_mels: [5, 10, 20, 40, 80, 160, 320]
+MelSpectrogramLoss.window_lengths: [32, 64, 128, 256, 512, 1024, 2048]
+MelSpectrogramLoss.mel_fmin: [0, 0, 0, 0, 0, 0, 0]
+MelSpectrogramLoss.mel_fmax: [null, null, null, null, null, null, null]
+MelSpectrogramLoss.pow: 1.0
+MelSpectrogramLoss.clamp_eps: 1.0e-5
+MelSpectrogramLoss.mag_weight: 0.0
+
+# Data
+batch_size: 72
+train/AudioDataset.duration: 0.38
+train/AudioDataset.n_examples: 10000000
+
+val/AudioDataset.duration: 5.0
+val/build_transform.augment_prob: 0.0
+val/AudioDataset.n_examples: 250
+
+test/AudioDataset.duration: 10.0
+test/build_transform.augment_prob: 0.0
+test/AudioDataset.n_examples: 1000
+
+AudioLoader.shuffle: true
+AudioDataset.without_replacement: true
+
+train/build_dataset.folders:
+  noisy:
+    - your_path_to/noisy_train
+  clean:
+    - your_path_to/clean_train
+
+
+val/build_dataset.folders:
+  noisy:
+    - your_path_to/test_noisy
+  clean:
+    - your_path_to/test_clean
+    
+
+test/build_dataset.folders:
+  noisy:
+    - your_path_to/test_noisy
+  clean:
+    - your_path_to/test_clean
+
